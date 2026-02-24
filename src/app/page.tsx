@@ -2,12 +2,15 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search, SlidersHorizontal, TrendingUp, Building2, MapPin,
-  Briefcase, ArrowUpDown, ChevronDown, Sparkles, Brain,
-  IndianRupee, GraduationCap, X, ExternalLink, Filter
+  Search, TrendingUp, Building2, MapPin,
+  Briefcase, ArrowUpDown, ChevronDown,
+  IndianRupee, GraduationCap, X, ExternalLink, Filter,
+  School, Trophy,
+  BarChart2
 } from "lucide-react";
 import { placementData } from "@/lib/data";
 import { getStats, filterCompanies, sortCompanies, parseCtc } from "@/lib/utils";
+import Link from "next/link";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -59,9 +62,42 @@ export default function Home() {
 
   return (
     <div>
+      {/* Page Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-outfit)]">Dashboard</h1>
-        <p className="text-xs text-[rgba(240,238,233,0.5)] mt-1">Your placement intelligence overview</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold font-[family-name:var(--font-outfit)]">Dashboard</h1>
+            <p className="text-xs text-[rgba(240,238,233,0.5)] mt-1">Your placement intelligence overview</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/jobs" className="btn-ghost text-xs">
+              <Briefcase className="w-3.5 h-3.5" /> Jobs
+            </Link>
+            <Link href="/feed" className="btn-primary text-xs">
+              <School className="w-3.5 h-3.5" /> Feed
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Quick Nav Cards */}
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {[
+          { href: "/jobs", label: "Job Hub", desc: "8 new jobs today", icon: Briefcase, color: "#10B981" },
+          { href: "/feed", label: "College Feed", desc: "10 new posts", icon: School, color: "#8B5CF6" },
+          { href: "/progress", label: "Progress", desc: "7-day streak 🔥", icon: Trophy, color: "#F59E0B" },
+          { href: "/colleges", label: "Colleges", desc: "4 new reviews", icon: GraduationCap, color: "#06B6D4" },
+        ].map((item, i) => (
+          <motion.div key={i} variants={itemVariants}>
+            <Link href={item.href} className="glass-card p-4 group cursor-pointer hover:border-[rgba(255,255,255,0.18)] transition-all block">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: `${item.color}15` }}>
+                <item.icon className="w-4.5 h-4.5" style={{ color: item.color }} />
+              </div>
+              <p className="text-sm font-semibold group-hover:text-[#8B5CF6] transition-colors">{item.label}</p>
+              <p className="text-[10px] text-[rgba(240,238,233,0.4)] mt-0.5">{item.desc}</p>
+            </Link>
+          </motion.div>
+        ))}
       </motion.div>
 
       {/* Bento Stats Grid */}
@@ -87,7 +123,7 @@ export default function Home() {
         ))}
       </motion.div>
 
-      {/* Package Distribution + Top Locations Bento */}
+      {/* Charts Row */}
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         <motion.div variants={itemVariants} className="glass-card p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
@@ -140,7 +176,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-cloud-dancer-60)]" />
-            <input type="text" placeholder="Search companies or roles... (⌘K)" className="input-glass pl-10" value={search} onChange={e => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search companies or roles..." className="input-glass pl-10" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <div className="flex gap-2">
             <button onClick={() => setShowFilters(!showFilters)} className={`btn-ghost text-xs ${showFilters ? "!border-[#8B5CF6] !text-[#8B5CF6]" : ""}`}>
@@ -151,7 +187,6 @@ export default function Home() {
             </button>
           </div>
         </div>
-
         <AnimatePresence>
           {showFilters && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
@@ -191,7 +226,7 @@ export default function Home() {
       {/* Results Count */}
       <div className="flex items-center justify-between mb-4 px-1">
         <p className="text-xs text-[var(--color-cloud-dancer-60)]">
-          Showing <span className="text-[var(--color-cloud-dancer)] font-semibold">{filtered.length}</span> opportunities
+          Showing <span className="text-[var(--color-cloud-dancer)] font-semibold">{filtered.length}</span> placement records
         </p>
         {(search || minCtc > 0 || maxCtc > 0 || cgpa > 0 || location !== "All") && (
           <button onClick={() => { setSearch(""); setMinCtc(0); setMaxCtc(0); setCgpa(0); setLocation("All"); }} className="text-xs text-[#8B5CF6] hover:underline cursor-pointer flex items-center gap-1">
@@ -205,12 +240,9 @@ export default function Home() {
         <AnimatePresence mode="popLayout">
           {filtered.map((company) => (
             <motion.div
-              key={`${company.id}-${company.role}`}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
+              key={`${company.id}-${company.role}`} layout
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}
               className="glass-card p-4 cursor-pointer group"
               onClick={() => setSelectedCompany(selectedCompany === company.id ? null : company.id)}
             >
@@ -287,10 +319,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="text-center py-8 border-t border-[rgba(255,255,255,0.05)]">
         <p className="text-[11px] text-[rgba(240,238,233,0.5)]">
-          HireMap · Built with 📍 for the 2026 Batch · {placementData.length} opportunities loaded
+          HireMap · Career Intelligence Platform · {placementData.length} placement records
         </p>
       </footer>
     </div>
   );
 }
-
